@@ -1,5 +1,7 @@
 ---
-vpn: yes
+vpn:
+  remote: yes
+  local: no
 
 instack:
  destroy: no

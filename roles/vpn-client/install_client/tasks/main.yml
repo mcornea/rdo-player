@@ -1,0 +1,26 @@
+---
+- name: enable epel when distro is not Fedora
+  command: rpm -ivh http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
+  ignore_errors: yes
+  when: ansible_distribution != "Fedora"
+
+- name: install openvpn
+  yum: name=openvpn state=installed
+
+- name: Copy ca.crt
+  command: cp vpn-certs/stack-server-ca.crt /etc/openvpn/stack-server-ca.crt
+
+- name: Copy stack.key
+  command: cp vpn-certs/stack-server-stack.key /etc/openvpn/stack-server-stack.key
+
+- name: Copy stack.crt
+  command: cp vpn-certs/stack-server-stack.crt /etc/openvpn/stack-server-stack.crt
+
+- name: Copy config file
+  command: cp vpn-certs/stack.conf /etc/openvpn/stack.conf
+
+- name: Symlink openvpn service
+  file: src=/lib/systemd/system/openvpn\@.service dest=/etc/systemd/system/multi-user.target.wants/openvpn\@stack.service state=link
+
+- name: enable openvpn
+  service: name=openvpn@stack.service state=restarted enabled=yes

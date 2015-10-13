@@ -1,0 +1,13 @@
+---
+
+- name: Fetch ca.crt
+  command: scp -o 'StrictHostKeyChecking=no' root@{{ hostvars['physical_host']['ansible_default_ipv4']['address'] }}:/etc/openvpn/keys/ca.crt vpn-certs/stack-server-ca.crt
+
+- name: Fetch stack.key
+  command: scp -o 'StrictHostKeyChecking=no' root@{{ hostvars['physical_host']['ansible_default_ipv4']['address'] }}:/etc/openvpn/keys/stack.key vpn-certs/stack-server-stack.key
+
+- name: Fetch stack.crt
+  command: scp -o 'StrictHostKeyChecking=no' root@{{ hostvars['physical_host']['ansible_default_ipv4']['address'] }}:/etc/openvpn/keys/stack.crt vpn-certs/stack-server-stack.crt
+
+- name: Create config file
+  template: src=stack.conf.j2 dest=vpn-certs/stack.conf

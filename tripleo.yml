@@ -23,16 +23,20 @@
   remote_user: root
 
   roles:
-      - { role: vpn-server, when: vpn }
+      - { role: vpn-server, when: vpn.remote }
+
+- name: Fetch VPN certs
+  hosts: vpn-clients
+
+  roles:
+      - { role: vpn-client/fetch_certs, when: vpn.remote }
 
 - name: Install VPN clients
   hosts: vpn-clients
-  remote_user: marius
   sudo: yes
-  sudo_user: root
 
   roles:
-      - { role: vpn-client, when: vpn }
+      - { role: vpn-client/install_client, when: vpn.remote and vpn.local }
 
 - name: Prepare overcloud
   hosts: undercloud_vm
