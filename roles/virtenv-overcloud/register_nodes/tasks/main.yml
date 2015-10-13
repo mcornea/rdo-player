@@ -21,3 +21,6 @@
 - name: Flavors registration status
   debug:
     msg: "{{ flavors_reg.stdout }}"
+
+- name: Configure a nameserver for the Overcloud
+  shell:  source /home/stack/stackrc; subnet_id=$(neutron net-list --fields subnets | grep -v subnet | awk {'print $2'} | grep -v ^$); neutron subnet-update $subnet_id --dns-nameserver 192.168.122.1
