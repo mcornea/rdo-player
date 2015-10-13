@@ -1,0 +1,36 @@
+---
+- name: Create templates directory
+  file: path=/home/stack/templates state=directory
+
+- name: Copy default Heat templates
+  command:  cp -r /usr/share/openstack-tripleo-heat-templates /home/stack/templates/my-overcloud
+
+- name: Copy single nic templates
+  command:  cp -r /usr/share/openstack-tripleo-heat-templates/network/config/single-nic-vlans /home/stack/templates/nic-configs
+
+- name: Create network-environment.yaml file
+  template: src=network-environment.yaml dest=/home/stack/templates/network-environment.yaml
+
+- name: Create snmpd user template
+  template: src=snmpd-user.yaml dest=/home/stack/templates/my-overcloud/extraconfig/post_deploy/snmpd-user.yaml
+
+- name: Create snmpd environment file
+  template: src=snmpd.yaml dest=/home/stack/templates/snmpd.yaml
+
+- name: Create firstboot-environment.yaml
+  template: src=firstboot-env.yaml dest=/home/stack/templates/firstboot-environment.yaml
+
+- name: Create firstboot-config.yaml
+  template: src=firstboot-config.yaml dest=/home/stack/templates/my-overcloud/firstboot/firstboot-config.yaml
+
+- name: Create external-lb.yaml file
+  template: src=external-lb.yaml dest=/home/stack/templates/external-lb.yaml
+
+- name: Create ceph.yaml file
+  template: src=ceph.yaml dest=/home/stack/templates/ceph.yaml
+
+- name: Create deploy.commands
+  template: src=deploy.commands dest=/home/stack/deploy.commands
+
+- name: Create post.deploy
+  template: src=post.deploy dest=/home/stack/post.deploy

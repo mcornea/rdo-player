@@ -1,0 +1,63 @@
+---
+- name: Install vim
+  yum: name=vim state=present
+
+- name: Copy vimrc for stack user
+  sudo: yes
+  sudo_user: stack
+  template: src=vimrc dest=/home/stack/.vimrc
+
+- name: Copy bashrc for stack user
+  sudo: yes
+  sudo_user: stack
+  template: src=bashrc_stack dest=/home/stack/.bashrc
+
+- name: Copy vimrc for root
+  template: src=vimrc dest=/root/.vimrc
+
+- name: Copy bashrc for root
+  template: src=bashrc_root dest=/root/.bashrc
+
+- name: Copy ssh config
+  template: src=ssh_config  dest=/home/stack/.ssh/config mode=0600
+  sudo: yes
+  sudo_user: stack
+
+- name: Install yum-plugin-priorities
+  yum: name=yum-plugin-priorities state=present
+
+- name: Install TripleO CLI
+  yum: name=python-tripleoclient state=present
+
+- name: Check if tripleo-undercloud-passwords exists
+  stat: path=/root/tripleo-undercloud-passwords
+  register: uc_password
+
+- name: Install undercloud
+  sudo: yes
+  sudo_user: stack
+  environment:
+    DIB_INSTALLTYPE_puppet_modules: "source"
+  shell: openstack undercloud install 
+  when: not uc_password.stat.exists
+
+- name: Add vlan10 external network interface
+  command: ovs-vsctl add-port br-ctlplane vlan10 tag=10 -- set interface vlan10 type=internal
+  ignore_errors: yes
+
+- name: Bring the vlan10 interface up
+  command: ip link set dev vlan10 up
+  ignore_errors: yes
+
+- name: Add ip address on vlan10 interface from the external subnet space
+  command: ip addr add 172.16.23.251/24 dev vlan10
+  ignore_errors: yes
+
+- name: Add masquarade rule
+  command: iptables -A BOOTSTACK_MASQ -s 172.16.23.0/24 ! -d 172.16.23.0/24 -j MASQUERADE -t nat
+
+- name: Enable asymmetric routing in sysctl
+  sysctl: name=net.ipv4.conf.default.rp_filter value=2 sysctl_set=yes state=present reload=yes
+
+- name: Enable asymmetric routing
+  shell: echo 2 > /proc/sys/net/ipv4/conf/default/rp_filter; echo 2 > /proc/sys/net/ipv4/conf/all/rp_filter

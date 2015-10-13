@@ -1,0 +1,11 @@
+# Basic HA deployment
+openstack overcloud deploy --templates ~/templates/my-overcloud -e ~/templates/my-overcloud/environments/network-isolation.yaml -e ~/templates/network-environment.yaml -e ~/templates/firstboot-environment.yaml --control-scale 3 --compute-scale 1 --ceph-storage-scale 3 --ntp-server clock.redhat.com --libvirt-type qemu
+
+# Post deploy script for setting up snmp user on overcloud nodes
+openstack overcloud deploy --templates ~/templates/my-overcloud -e ~/templates/my-overcloud/environments/network-isolation.yaml -e ~/templates/network-environment.yaml --control-scale 1 --compute-scale 1 --ceph-storage-scale 0 --ntp-server 10.5.26.10 -e ~/templates/snmpd.yaml --libvirt-type qemu
+
+# Custom ceph pools name and user
+openstack overcloud deploy --templates ~/templates/my-overcloud -e ~/templates/my-overcloud/environments/network-isolation.yaml -e ~/templates/network-environment.yaml --control-scale 3 --compute-scale 1 --ceph-storage-scale 3 --ntp-server 10.5.26.10 -e ~/templates/ceph.yaml --libvirt-type qemu
+
+# External loadbalancer
+openstack overcloud deploy --templates ~/templates/my-overcloud -e ~/templates/my-overcloud/environments/network-isolation.yaml -e ~/templates/network-environment.yaml --control-scale 1 --compute-scale 1 --ceph-storage-scale 0 --ntp-server 10.5.26.10 --libvirt-type qemu -e /usr/share/openstack-tripleo-heat-templates/environments/external-loadbalancer-vip.yaml -e ~/templates/external-lb.yaml 

@@ -1,0 +1,24 @@
+resource_registry:
+  OS::TripleO::BlockStorage::Net::SoftwareConfig: /home/stack/templates/nic-configs/cinder-storage.yaml
+  OS::TripleO::Compute::Net::SoftwareConfig: /home/stack/templates/nic-configs/compute.yaml
+  OS::TripleO::Controller::Net::SoftwareConfig: /home/stack/templates/nic-configs/controller.yaml
+  OS::TripleO::ObjectStorage::Net::SoftwareConfig: /home/stack/templates/nic-configs/swift-storage.yaml
+  OS::TripleO::CephStorage::Net::SoftwareConfig: /home/stack/templates/nic-configs/ceph-storage.yaml
+
+parameter_defaults:
+  InternalApiNetCidr: 172.16.20.0/24
+  StorageNetCidr: 172.16.21.0/24
+  StorageMgmtNetCidr: 172.16.19.0/24
+  TenantNetCidr: 172.16.22.0/24
+  ExternalNetCidr: 172.16.23.0/24
+  InternalApiAllocationPools: [{'start': '172.16.20.10', 'end': '172.16.20.100'}]
+  StorageAllocationPools: [{'start': '172.16.21.10', 'end': '172.16.21.100'}]
+  StorageMgmtAllocationPools: [{'start': '172.16.19.10', 'end': '172.16.19.100'}]
+  TenantAllocationPools: [{'start': '172.16.22.10', 'end': '172.16.22.100'}]
+  ExternalAllocationPools: [{'start': '172.16.23.10', 'end': '172.16.23.100'}]
+  ExternalInterfaceDefaultRoute: 172.16.23.251
+  NeutronExternalNetworkBridge: "''"
+  ControlPlaneSubnetCidr: "24"
+  ControlPlaneDefaultRoute: 192.0.2.1
+  EC2MetadataIp: 192.0.2.1
+  DnsServers: ["10.16.36.29","10.11.5.19"]  

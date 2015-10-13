@@ -1,0 +1,54 @@
+---
+- name: install epel repo
+  command: rpm -ivh http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
+  ignore_errors: yes
+
+- name: install openvpn
+  yum: name=openvpn state=installed
+
+- name: install easy-rsa
+  yum: name=easy-rsa state=installed
+
+- name: copy easy-rsa 
+  shell: cp -rf /usr/share/easy-rsa/2.0/* /etc/openvpn/
+
+- name: generate server keys
+  shell: cd /etc/openvpn/; source ./vars; ./clean-all; ./pkitool --initca; ./pkitool --server server; ./build-dh
+  args: 
+    chdir: /etc/openvpn/
+    creates: keys
+
+- name: generate user certs
+  shell: cd /etc/openvpn/; if [ -f keys/{{ item }}.crt ]; then exit 123; else  source ./vars; ./pkitool {{ item }}; fi
+  with_items: vpn_users
+  register: user_result
+  changed_when: "user_result.rc != 123"
+  failed_when: "'TXT_DB error' in user_result.stderr"
+
+- name: fix selinux context of files
+  shell: restorecon -Rv /etc/openvpn
+  register: restore_result
+  changed_when: "restore_result.rc !=0"
+
+- name: create configuration file
+  template: src=stack.j2 dest='/etc/openvpn/stack.conf'
+  notify: 
+    - restart openvpn
+
+- name: Symlink openvpn service
+  file: src=/lib/systemd/system/openvpn\@.service dest=/etc/systemd/system/multi-user.target.wants/openvpn\@stack.service state=link
+
+- name: enable openvpn
+  service: name=openvpn@stack.service state=started enabled=yes
+
+- name: Add route to undercloud provisioning network
+  command: ip route add 192.0.2.0/24 via {{ undercloud_ip }}
+  ignore_errors: yes
+
+- name: Add route to overcloud external network
+  command: ip route add 172.16.23.0/24 via {{ undercloud_ip }}
+  ignore_errors: yes
+
+- name: Delete libvirt default net iptables rules
+  command: iptables -F
+  ignore_errors: yes

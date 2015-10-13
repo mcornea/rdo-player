@@ -1,0 +1,24 @@
+---
+- name: Get Fedora image
+  get_url: url=https://download.fedoraproject.org/pub/fedora/linux/releases/22/Cloud/x86_64/Images/Fedora-Cloud-Base-22-20150521.x86_64.qcow2 dest=/home/stack/Fedora-Cloud-Base-22-20150521.x86_64.qcow2
+
+- name: Get overcloud-full image
+  get_url: url="{{ overcloud.images_location }}"/overcloud-full.tar dest=/home/stack/overcloud-full.tar
+
+- name: Unpack overcloud
+  command: tar -xvf /home/stack/overcloud-full.tar -C /home/stack/
+
+- name: Get deploy-ramdisk-ironic image
+  get_url: url="{{ overcloud.images_location }}"/deploy-ramdisk-ironic.tar dest=/home/stack/deploy-ramdisk-ironic.tar
+
+- name: Unpack ramdisk
+  command: tar -xvf /home/stack/deploy-ramdisk-ironic.tar -C /home/stack/
+
+- name: Get ironic-python-agent image
+  get_url: url="{{ overcloud.images_location }}"/ironic-python-agent.tar dest=/home/stack/ironic-python-agent.tar
+
+- name: Unpack ironic-python-agent
+  command: tar -xvf /home/stack/ironic-python-agent.tar -C /home/stack/
+
+- name: Load images to Glance
+  shell: source /home/stack/stackrc; openstack overcloud image upload

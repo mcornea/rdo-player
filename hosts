@@ -1,0 +1,5 @@
+physical_host ansible_ssh_port=22 ansible_ssh_host=dell
+undercloud_vm ansible_ssh_port=2900 ansible_ssh_host=dell
+
+[vpn-clients]
+localhost ansible_connection=local

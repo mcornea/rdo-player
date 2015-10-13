@@ -1,0 +1,37 @@
+- name: delete provisioning route
+  command: ip route del 192.0.2.0/24
+  ignore_errors: yes
+
+- name: delete external overcloud network
+  command: ip route del 172.16.23.0/24
+  ignore_errors: yes
+
+- name: register instack_vms
+  shell: virsh list --all | grep -E '( instack )|( baremetalbrbm_[0-9]+ )' | awk '{ print $2 }'
+  changed_when: false
+  register: instack_vms
+
+- name: destroy instack VMs
+  shell: |
+    virsh destroy {{ item }}
+    virsh undefine --remove-all-storage {{ item }}
+  with_items: instack_vms.stdout_lines
+
+- name: register some_socat_forwarders_running
+  shell: ps aux | grep socat | grep -v grep
+  changed_when: false
+  failed_when: false
+  register: some_socat_forwarders_running
+
+- name: kill socat forwarders
+  shell: pkill socat
+  when: some_socat_forwarders_running.rc == 0
+
+- name: Remove delorean repos
+  shell: rm -rf /etc/yum.repos.d/delorean*
+
+- name: Remove openstack related packages
+  shell: for i in `rpm -qa |egrep "tripleo|instack|openstack"`; do yum remove -y $i;done
+
+- fail: msg="All VMs where destroyed"
+  when: True

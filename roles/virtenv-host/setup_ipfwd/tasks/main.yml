@@ -1,0 +1,11 @@
+- name: fetch undercloud VM IP address
+  include: undercloud_ip.yml
+
+- name: ensure socat is installed
+  yum:
+    name: socat
+    state: present
+
+- name: undercloud ssh forwarding
+  include: ssh_forward.yml
+

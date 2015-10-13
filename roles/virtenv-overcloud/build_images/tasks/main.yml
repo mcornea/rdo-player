@@ -1,0 +1,8 @@
+---
+- name: Build overcloud images
+  environment: 
+  DIB_YUM_REPO_CONF: "/etc/yum.repos.d/delorean.repo /etc/yum.repos.d/delorean-deps.repo"
+  shell: openstack overcloud image build --all
+
+- name: Load images to Glance
+  shell: source /home/stack/stackrc; openstack overcloud image upload

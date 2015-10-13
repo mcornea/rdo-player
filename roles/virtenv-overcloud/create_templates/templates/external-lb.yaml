@@ -1,0 +1,65 @@
+parameters:
+  ServiceNetMap:
+    NeutronTenantNetwork: tenant
+    CeilometerApiNetwork: internal_api
+    MongoDbNetwork: internal_api
+    CinderApiNetwork: internal_api
+    CinderIscsiNetwork: storage
+    GlanceApiNetwork: storage
+    GlanceRegistryNetwork: internal_api
+    KeystoneAdminApiNetwork: internal_api
+    KeystonePublicApiNetwork: internal_api
+    NeutronApiNetwork: internal_api
+    HeatApiNetwork: internal_api
+    NovaApiNetwork: internal_api
+    NovaMetadataNetwork: internal_api
+    NovaVncProxyNetwork: internal_api
+    SwiftMgmtNetwork: storage_mgmt
+    SwiftProxyNetwork: storage
+    HorizonNetwork: internal_api
+    MemcachedNetwork: internal_api
+    RabbitMqNetwork: internal_api
+    RedisNetwork: internal_api
+    MysqlNetwork: internal_api
+    CephClusterNetwork: storage_mgmt
+    CephPublicNetwork: storage
+    ControllerHostnameResolveNetwork: internal_api
+    ComputeHostnameResolveNetwork: internal_api
+    BlockStorageHostnameResolveNetwork: internal_api
+    ObjectStorageHostnameResolveNetwork: internal_api
+    CephStorageHostnameResolveNetwork: storage
+
+parameter_defaults:
+  ControlPlaneIP: 192.0.2.250
+  ExternalNetworkVip: 172.16.23.250
+  InternalApiNetworkVip: 172.16.20.250
+  StorageNetworkVip: 172.16.21.250
+  StorageMgmtNetworkVip: 172.16.19.250
+  ServiceVips:
+    redis: 172.16.20.249
+  ControllerIPs:
+    external_cidr: "24"
+    internal_api_cidr: "24"
+    storage_cidr: "24"
+    storage_mgmt_cidr: "24"
+    tenant_cidr: "24"
+    external:
+    - 172.16.23.150
+    - 172.16.23.151
+    - 172.16.23.152
+    internal_api:
+    - 172.16.20.150
+    - 172.16.20.151
+    - 172.16.20.152
+    storage:
+    - 172.16.21.150
+    - 172.16.21.151
+    - 172.16.21.152
+    storage_mgmt:
+    - 172.16.19.150
+    - 172.16.19.151
+    - 172.16.19.152
+    tenant:
+    - 172.16.22.150
+    - 172.16.22.151
+    - 172.16.22.152

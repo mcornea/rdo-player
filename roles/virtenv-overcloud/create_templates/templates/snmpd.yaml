@@ -1,0 +1,5 @@
+resource_registry:
+    OS::TripleO::NodeExtraConfigPost: my-overcloud/extraconfig/post_deploy/snmpd-user.yaml
+parameter_defaults:
+    snmp_user: ro_snmp_user
+    snmp_pass: ro_snmp_user_pass

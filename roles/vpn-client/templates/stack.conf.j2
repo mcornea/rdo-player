@@ -1,0 +1,14 @@
+client
+dev tun
+proto udp
+remote {{ hostvars['physical_host']['ansible_default_ipv4']['address'] }}
+resolv-retry infinite 
+nobind
+persist-key
+persist-tun
+ca /etc/openvpn/stack-server-ca.crt
+cert /etc/openvpn/stack-server-stack.crt
+key /etc/openvpn/stack-server-stack.key
+ns-cert-type server
+comp-lzo
+verb 3

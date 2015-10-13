@@ -1,0 +1,45 @@
+---
+- name: Prepare virtual environment
+  hosts: physical_host
+  remote_user: root
+
+  roles:
+    - { role: virtenv-host/instack_user, when: not instack.destroy }
+    - { role: virtenv-host/install_repos, when: not instack.destroy }
+    - virtenv-host/setup_virtenv
+    - virtenv-host/setup_ipfwd
+
+- name: Prepare undercloud VM
+  hosts: undercloud_vm
+  remote_user: root
+
+  roles:
+    - virtenv-host/instack_user
+    - virtenv-host/install_repos
+    - { role: virtenv-undercloud/install_undercloud, when: undercloud.install }
+
+- name: Install VPN server on host machine
+  hosts: physical_host
+  remote_user: root
+
+  roles:
+      - { role: vpn-server, when: vpn }
+
+- name: Install VPN clients
+  hosts: vpn-clients
+  remote_user: marius
+  sudo: yes
+  sudo_user: root
+
+  roles:
+      - { role: vpn-client, when: vpn }
+
+- name: Prepare overcloud
+  hosts: undercloud_vm
+  remote_user: stack
+
+  roles:
+      - { role: virtenv-overcloud/load_images, when: overcloud.install and not overcloud.images_build }
+      - { role: virtenv-overcloud/build_images, when: overcloud.install and overcloud.images_build }
+      - { role: virtenv-overcloud/register_nodes, when: overcloud.install }
+      - { role: virtenv-overcloud/create_templates, when: overcloud.install }

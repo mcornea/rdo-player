@@ -1,0 +1,51 @@
+---
+- name: Install vim
+  yum: name=vim state=present
+  when: not instack.destroy
+
+- name: Copy vimrc for stack user
+  sudo: yes
+  sudo_user: stack
+  template: src=vimrc dest=/home/stack/.vimrc
+  when: not instack.destroy
+
+- name: Copy bashrc for stack user
+  sudo: yes
+  sudo_user: stack
+  template: src=bashrc_stack dest=/home/stack/.bashrc
+  when: not instack.destroy
+
+- name: Copy vimrc for root
+  template: src=vimrc dest=/root/.vimrc
+  when: not instack.destroy
+
+- name: Copy bashrc for root
+  template: src=bashrc_root dest=/root/.bashrc
+  when: not instack.destroy
+
+- name: Install instack-undercloud
+  yum: name=instack-undercloud state=present
+  when: not instack.destroy
+
+- name: Destroy instack virtual environment
+  include: destroy.yml
+  when: instack.destroy
+
+- name: Check if instack VM is defined
+  command: bash -c  "virsh list --all | grep instack"
+  register: instackvm
+  ignore_errors: yes
+
+- name: Run virtual env setup
+  environment: 
+   NODE_DIST: centos7
+   UNDERCLOUD_NODE_CPU: "{{ instack.undercloud_node.vcpus }}"
+   UNDERCLOUD_NODE_MEM: "{{ instack.undercloud_node.memory }}"
+   NODE_COUNT: "{{ instack.overcloud_nodes.number }}"
+   NODE_CPU: "{{ instack.overcloud_nodes.vcpus }}"
+   NODE_MEM: "{{ instack.overcloud_nodes.memory }}"
+   TESTENV_ARGS: "--baremetal-bridge-names 'brbm'"
+  shell: instack-virt-setup
+  sudo: yes
+  sudo_user: stack
+  when: instackvm.rc != 0

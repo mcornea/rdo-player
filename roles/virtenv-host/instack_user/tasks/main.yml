@@ -1,0 +1,21 @@
+---
+- name: create instack user
+  user: name="stack" state=present password=$6$rounds=100000$nxEbIAmlPZf/OFRh$qrO0j9gsVlXW48KkOukrg3KHlyhrekRlN5GnIonbFnYHG.sB6Ow8kplsifBKDuYStyuDzTxTviq94QfHLlgQx1
+
+- name: copy the .bash_profile file to /home/stack
+  command:  cp /root/.bash_profile /home/stack/
+
+- name: create .ssh dir for "stack"
+  file: path=/home/stack/.ssh mode=0700 owner=stack group=stack state=directory
+
+- name: copy the authorized_keys file to /home/stack
+  command:  cp /root/.ssh/authorized_keys /home/stack/.ssh/
+
+- name: set file permissions on authorized_hosts for stack user
+  file: path=/home/stack/.ssh/authorized_keys mode=0600 owner=stack group=stack
+
+- name: add stack user to sudoers
+  lineinfile: dest=/etc/sudoers line="stack ALL=(root) NOPASSWD:ALL"
+
+- name: set fact stack user home
+  set_fact: instack_user_home=/home/stack
