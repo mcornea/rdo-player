@@ -37,7 +37,6 @@
   sudo: yes
   sudo_user: stack
   environment:
-    DIB_INSTALLTYPE_puppet_modules: "source"
   shell: openstack undercloud install 
   when: not uc_password.stat.exists
 

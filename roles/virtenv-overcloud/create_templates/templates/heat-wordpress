@@ -1,0 +1,144 @@
+heat_template_version: 2013-05-23
+
+description: Simple template to deploy a single compute instance
+
+parameters:
+  image:
+    type: string
+    label: Image name or ID
+    description: Image to be used for compute instance
+    default: Fedora22
+  flavor:
+    type: string
+    label: Flavor
+    description: Type of instance (flavor) to be used
+    default: m1.small
+  key:
+    type: string
+    label: Key name
+    description: Name of key-pair to be used for compute instance
+    default: userkey
+  private_network:
+    type: string
+    label: Private network name or ID
+    description: Network to attach instance to.
+    default: tenant-net
+  public_network:
+    type: string
+    label: Public network name or ID
+    description: Public network with floating IP addresses.
+    default: public-net
+  DBRootPassword:
+    description: Root password for MySQL
+    type: string
+    default: admin
+    hidden: true
+    constraints:
+      - length: { min: 5, max: 41 }
+        description: password must be between 5 and 41 characters
+      - allowed_pattern: '[a-zA-Z0-9]*'
+        description: must contain only alphanumeric characters.
+  DBName:
+    description: The WordPress database name
+    type: string
+    default: wordpress
+    constraints:
+      - length: { min: 1, max: 64 }
+      - allowed_pattern: '[a-zA-Z][a-zA-Z0-9]*'
+  DBUsername:
+    description: The WordPress database username
+    type: string
+    default: admin
+    constraints:
+      - length: { min: 1, max: 64 }
+      - allowed_pattern: '[a-zA-Z][a-zA-Z0-9]*'
+  DBPassword:
+    type: string
+    default: admin
+    hidden: true
+    constraints:
+      - length: { min: 5, max: 41 }
+        description: password must be between 5 and 41 characters
+      - allowed_pattern: '[a-zA-Z0-9]*'
+        description: must contain only alphanumeric characters.
+
+resources:
+  web_server_security_group:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      name: web_server_security_group
+      rules:
+        - protocol: tcp
+          port_range_min: 80
+          port_range_max: 80
+        - protocol: tcp
+          port_range_min: 443
+          port_range_max: 443
+        - protocol: icmp
+        - protocol: tcp
+          port_range_min: 22
+          port_range_max: 22
+
+  my_instance_port:
+    type: OS::Neutron::Port
+    properties:
+      network: { get_param: private_network }
+      security_groups:
+       - { get_resource: web_server_security_group }
+
+  my_instance:
+    type: OS::Nova::Server
+    properties:
+      image: { get_param: image }
+      flavor: { get_param: flavor }
+      key_name: { get_param: key }
+      networks:
+        - network: { get_param: private_network }
+      user_data:
+        str_replace:
+          params:
+            $db_rootpassword: { get_param: DBRootPassword }
+            $db_name: { get_param: DBName }
+            $db_username: { get_param: DBUsername }
+            $db_userpass: { get_param: DBPassword }
+          template: |
+            #!/bin/bash
+            yum install -y httpd mariadb-server
+            systemctl start mariadb
+            systemctl enable mariadb
+            systemctl start httpd
+            systemctl enable httpd
+            mysqladmin -u root password $db_rootpassword
+            mysql -u root --password=$db_rootpassword  -e "CREATE DATABASE $db_name;"
+            mysql -u root --password=$db_rootpassword  -e "GRANT ALL PRIVILEGES ON $db_name.* TO $db_username@localhost IDENTIFIED BY '$db_userpass';"
+            mysql -u root --password=$db_rootpassword  -e "FLUSH PRIVILEGES;"
+            yum install -y wordpress
+            sed -i "/Deny from All/d" /etc/httpd/conf.d/wordpress.conf
+            sed -i "s/Require local/Require all granted/" /etc/httpd/conf.d/wordpress.conf
+            sed -i -e s/database_name_here/$db_name/ -e s/username_here/$db_username/ -e s/password_here/$db_userpass/ /usr/share/wordpress/wp-config.php
+            systemctl restart httpd
+
+      user_data_format: RAW
+      networks:
+        - port: { get_resource: my_instance_port }
+
+  floating_ip:
+    type: OS::Neutron::FloatingIP
+    properties:
+      floating_network: { get_param: public_network }
+
+  floating_ip_assoc:
+    type: OS::Neutron::FloatingIPAssociation
+    properties:
+      floatingip_id: { get_resource: floating_ip }
+      port_id: { get_resource: my_instance_port }
+
+outputs:
+  WP_URL:
+    value:
+      Fn::Join:
+      - ''
+      - - http://
+        - get_attr: [floating_ip, floating_ip_address]
+        - /wordpress
+    description: URL of the Wordpress instance

@@ -34,3 +34,6 @@
 
 - name: Create post.deploy
   template: src=post.deploy dest=/home/stack/post.deploy
+
+- name: Create heat-wordpress
+  template: src=heat-wordpress dest=/home/stack/templates/heat-wordpress

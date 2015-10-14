@@ -1,8 +1,8 @@
 source overcloudrc
 neutron net-create ext_net --provider:network_type vlan  --provider:physical_network datacentre  --provider:segmentation_id 10 --router:external
-neutron subnet-create ext_net 172.16.23.0/24 --allocation-pool start=172.16.23.110,end=172.16.23.150 --gateway 172.16.23.251 --enable_dhcp=False
+neutron subnet-create ext_net 172.16.23.0/24 --allocation-pool start=172.16.23.110,end=172.16.23.150 --gateway 172.16.23.251 --enable_dhcp=False 
 neutron net-create tenant-net
-neutron subnet-create tenant-net 192.168.0.0/24 --name tenant-subnet --gateway 192.168.0.1
+neutron subnet-create tenant-net 192.168.0.0/24 --name tenant-subnet --gateway 192.168.0.1 --dns-nameserver 8.8.8.8
 neutron router-create  tenant-router
 neutron router-interface-add tenant-router tenant-subnet
 neutron router-gateway-set tenant-router ext_net
