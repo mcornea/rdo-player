@@ -18,10 +18,5 @@ undercloud:
 
 overcloud:
   install: yes
-  controller: 1
-  compute: 1
-  ceph: 0
-  cinder: 0
-  swift:  0
   images_build: no
   images_location: "https://repos.fedorapeople.org/repos/openstack-m/rdo-images-centos-liberty/"
