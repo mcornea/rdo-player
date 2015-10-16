@@ -4,7 +4,7 @@ vpn:
   local: no
 
 instack:
- destroy: yes
+ destroy: no
  undercloud_node:
    vcpus: 8
    memory: 16384
